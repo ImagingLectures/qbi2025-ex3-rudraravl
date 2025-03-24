@@ -77,5 +77,5 @@ def test_filter_gaussian_noise():
 
 def test_filter_poisson_noise():
     original_img=np.mean(imread('data/testpattern.png'),2)/255.
-    filtered_image = filter_image_gaussian_noise()
+    filtered_image = filter_image_poisson_noise()
     assert mse(original_img, filtered_image) < 6

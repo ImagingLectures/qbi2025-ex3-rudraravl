@@ -1,16 +1,23 @@
 import numpy as np
 from skimage.io import imread
+from scipy.ndimage import gaussian_filter, median_filter
 
 def mse(img1,img2):
     return np.mean((img1-img2)**2)
 
 def snr_mean_std(image: np.ndarray) -> float:
     """Compute SNR as mean divided by standard deviation."""
-    raise NotImplementedError("Implement me!")
+    if np.std(image) == 0:
+        return np.inf
+    return np.mean(image)/np.std(image)
+
 
 def snr_power_linear(img: np.ndarray) -> float:
     """Compute SNR as signal power (mean squared) over noise power (variance)."""
-    raise NotImplementedError("Implement me!")
+    if np.var(img) == 0:
+        return np.inf
+    return np.mean(img)**2/np.var(img)
+
 
 def psnr(img: np.ndarray, max_val: float = 255.0) -> float:
     """
@@ -32,7 +39,9 @@ def psnr(img: np.ndarray, max_val: float = 255.0) -> float:
     Returns:
         float: PSNR value in decibels (dB). Returns `inf` if the variance is zero.
     """
-    raise NotImplementedError("Implement me!")
+    if np.var(img) == 0:
+        return np.inf
+    return 10*np.log10(max_val**2/np.var(img))
 
 
 def snr_known_noise(image: np.ndarray, noise: np.ndarray) -> float:
@@ -48,7 +57,10 @@ def snr_known_noise(image: np.ndarray, noise: np.ndarray) -> float:
     Raises:
         ZeroDivisionError: If the sum of noise squared is zero.
     """
-    raise NotImplementedError("Implement me!")
+    noise_power = np.sum(noise**2)
+    if noise_power == 0:
+        raise ZeroDivisionError("Noise power is zero.")
+    return 10*np.log10(np.sum(image**2)/noise_power)
 
 
 def snr_second_region_image_a() -> float:
@@ -58,8 +70,9 @@ def snr_second_region_image_a() -> float:
     Returns:
         float: SNR value for the selected region.
     """
-    raise NotImplementedError("Implement me!")
-    
+    a=imread('data/scroll.tif')
+    return np.mean(a[1000:1060, 800:850])/np.std(a[1000:1060, 800:850])
+
 
 def snr_image_b() -> float:
     """
@@ -68,7 +81,9 @@ def snr_image_b() -> float:
     Returns:
         float: SNR value for the selected region.
     """
-    raise NotImplementedError("Implement me!")
+    b = imread('data/wood.tif')
+    return np.mean(b[200:250, 100:150]) / np.std(b[200:250, 100:150])
+
 
 def snr_image_c() -> float:
     """
@@ -77,7 +92,11 @@ def snr_image_c() -> float:
     Returns:
         float: SNR value for the selected region.
     """
-    raise NotImplementedError("Implement me!")
+    c = imread('data/asphalt_gray.tif')
+    # Adjust the region to find a more constant area
+    sample = c[10:150, 0:150]
+    return np.mean(sample) / np.std(sample)
+
 
 def filter_image_gaussian_noise() -> np.ndarray:
     """
@@ -89,7 +108,9 @@ def filter_image_gaussian_noise() -> np.ndarray:
     original_img=np.mean(imread('data/testpattern.png'),2)/255.
     SNR=2
     noised_image = original_img/original_img.max() + 1.0/SNR*np.random.normal(0,1,size=original_img.shape)
-    raise NotImplementedError("Implement me!")
+
+    recovered_img = gaussian_filter(noised_image, 3)
+    return recovered_img
 
 def filter_image_poisson_noise() -> np.ndarray:
     """
@@ -101,4 +122,6 @@ def filter_image_poisson_noise() -> np.ndarray:
     original_img=np.mean(imread('data/testpattern.png'),2)/255.
     SNR=2
     noised_image = original_img/original_img.max() + 1.0/SNR*np.random.poisson(5,size=original_img.shape)
-    raise NotImplementedError("Implement me!")
+
+    recovered_img = median_filter(noised_image, 5)
+    return recovered_img
